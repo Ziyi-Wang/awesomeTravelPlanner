@@ -1,0 +1,4 @@
+awesomeTravelPlanner/.*
+awesomeTravelPlanner/build/
+awesomeTravelPlanner/src/secrets/
+points_of_interest.txt

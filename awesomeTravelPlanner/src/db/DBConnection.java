@@ -16,4 +16,8 @@ public interface DBConnection {
 	public void saveRoute(String userID, List<List<Place>> places);
 
 	public void updateSchedule(String userID, Map<String, Integer> newSchedule);
+
+	public boolean registerUser(String userId, String password, String firstname, String lastname);
+
+	public boolean verifyLogin(String userId, String password);
 }

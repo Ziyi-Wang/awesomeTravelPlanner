@@ -118,4 +118,47 @@ public class MySQLConnection implements DBConnection {
 		}
 	}
 
+	@Override
+	public boolean registerUser(String userId, String password, String firstname, String lastname) {
+		if (conn == null) {
+			System.err.println("DB connection failed");
+			return false;
+		}
+
+		try {
+			String sql = "INSERT IGNORE INTO users VALUES (?, ?, ?, ?)";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, userId);
+			ps.setString(2, password);
+			ps.setString(3, firstname);
+			ps.setString(4, lastname);
+
+			return ps.executeUpdate() == 1;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean verifyLogin(String userId, String password) {
+		if (conn == null) {
+			return false;
+		}
+
+		try {
+			String sql = "SELECT * FROM users WHERE user_id = ? AND password = ? ";
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, userId);
+			statement.setString(2, password);
+			ResultSet rs = statement.executeQuery();
+			while (rs.next()) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
 }

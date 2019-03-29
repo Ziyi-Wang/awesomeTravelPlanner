@@ -19,7 +19,7 @@ public class MySQLTableCreation {
 
 			createRouteTable(conn);
 
-//			createUserTable(conn);
+			createUserTable(conn);
 
 //			createPlaceTable(conn);
 

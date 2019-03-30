@@ -20,4 +20,8 @@ public interface DBConnection {
 	public boolean registerUser(String userId, String password, String firstname, String lastname);
 
 	public boolean verifyLogin(String userId, String password);
+
+	public List<List<Place>> generatePath(String userID, List<Place> startPlaces);
+
+	public List<Place> generateDailyPath(String userID, int day, Place startPlace);
 }

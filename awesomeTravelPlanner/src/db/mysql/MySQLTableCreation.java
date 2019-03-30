@@ -21,7 +21,7 @@ public class MySQLTableCreation {
 
 			createUserTable(conn);
 
-//			createPlaceTable(conn);
+			createPlaceTable(conn);
 
 			conn.close();
 			System.out.println("Tables created successfully");
@@ -35,6 +35,9 @@ public class MySQLTableCreation {
 		String sql = "DROP TABLE IF EXISTS places";
 		statement.executeUpdate(sql);
 
+		sql = "CREATE TABLE places (" + "place_id VARCHAR(255) NOT NULL," + "name VARCHAR(255)," + "lat DOUBLE,"
+				+ "lon DOUBLE," + "imageURL VARCHAR(255)," + "PRIMARY KEY (place_id)" + ")";
+		statement.executeUpdate(sql);
 	}
 
 	private static void createUserTable(Connection conn) throws SQLException {

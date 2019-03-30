@@ -28,10 +28,10 @@ public class Register extends HttpServlet {
 		DBConnection conn = DBConnectionFactory.getConnection();
 		try {
 			JSONObject input = RpcHelper.readJSONObject(request);
-			String userId = input.getString("user_id");
+			String userId = input.getString("userID");
 			String password = input.getString("password");
-			String firstname = input.getString("first_name");
-			String lastname = input.getString("last_name");
+			String firstname = input.getString("firstName");
+			String lastname = input.getString("lastName");
 
 			JSONObject obj = new JSONObject();
 			if (conn.registerUser(userId, password, firstname, lastname)) {

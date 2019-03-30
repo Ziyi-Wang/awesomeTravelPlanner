@@ -78,28 +78,34 @@ public class Place {
 			return new Place(this);
 		}
 
-		public void setType(String type) {
+		public PlaceBuilder setType(String type) {
 			this.type = type;
+			return this;
 		}
 
-		public void setName(String name) {
+		public PlaceBuilder setName(String name) {
 			this.name = name;
+			return this;
 		}
 
-		public void setLat(double lat) {
+		public PlaceBuilder setLat(double lat) {
 			this.lat = lat;
+			return this;
 		}
 
-		public void setLon(double lon) {
+		public PlaceBuilder setLon(double lon) {
 			this.lon = lon;
+			return this;
 		}
 
-		public void setURL(String URL) {
+		public PlaceBuilder setURL(String URL) {
 			this.imageURL = URL;
+			return this;
 		}
 
-		public void setPlaceID(String placeID) {
+		public PlaceBuilder setPlaceID(String placeID) {
 			this.placeID = placeID;
+			return this;
 		}
 	}
 }

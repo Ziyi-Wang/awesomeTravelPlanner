@@ -25,15 +25,15 @@ public class Login extends HttpServlet {
 		DBConnection connection = DBConnectionFactory.getConnection();
 		try {
 			JSONObject input = RpcHelper.readJSONObject(request);
-			String userId = input.getString("user_id");
+			String userId = input.getString("userID");
 			String password = input.getString("password");
 
 			JSONObject obj = new JSONObject();
 			if (connection.verifyLogin(userId, password)) {
 				HttpSession session = request.getSession();
-				session.setAttribute("user_id", userId);
+				session.setAttribute("userID", userId);
 				session.setMaxInactiveInterval(600);
-				obj.put("status", "OK").put("user_id", userId);
+				obj.put("status", "OK").put("userID", userId);
 			} else {
 				response.setStatus(401);
 				obj.put("status", "User Doesn't Exists or Wrong Password");

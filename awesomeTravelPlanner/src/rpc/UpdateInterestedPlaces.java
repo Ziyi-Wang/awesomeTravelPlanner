@@ -21,11 +21,13 @@ public class UpdateInterestedPlaces extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String userID = "testUser";
+
 		DBConnection conn = DBConnectionFactory.getConnection();
 		try {
 			JSONObject input = RpcHelper.readJSONObject(request);
+			String userID = input.getString("userID");
 			JSONArray changes = input.getJSONArray("newSchedule");
+
 			Map<String, Integer> newSchedule = RpcHelper.parseSchedule(changes);
 			conn.updateSchedule(userID, newSchedule);
 

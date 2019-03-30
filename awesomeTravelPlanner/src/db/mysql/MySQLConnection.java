@@ -11,6 +11,7 @@ import java.util.Map;
 
 import db.DBConnection;
 import entity.Place;
+import entity.Place.PlaceBuilder;
 import external.GooglePlaceAPI;
 
 public class MySQLConnection implements DBConnection {
@@ -160,5 +161,57 @@ public class MySQLConnection implements DBConnection {
 		}
 
 		return false;
+	}
+
+	@Override
+	public List<List<Place>> generatePath(String userID, List<Place> startPlaces) {
+		List<List<Place>> res = new ArrayList<List<Place>>();
+		for (int i = 0; i < startPlaces.size(); i++) {
+			res.add(generateDailyPath(userID, i, startPlaces.get(i)));
+		}
+		return res;
+	}
+
+	@Override
+	public List<Place> generateDailyPath(String userID, int day, Place startPlace) {
+		try {
+			// 1. get placeID for this user on this day
+			String sql = "SELECT * FROM routes WHERE user_id = ? AND day = ? ";
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, userID);
+			statement.setInt(2, day);
+			ResultSet rs = statement.executeQuery();
+			List<String> placeIDs = new ArrayList<>();
+			while (rs.next()) {
+				placeIDs.add(rs.getString("place_id"));
+			}
+			System.out.println(placeIDs);
+
+			// 2. query place database and get place objects
+			List<Place> path = new ArrayList<>();
+
+			sql = "SELECT * FROM places WHERE place_id = ? ";
+			statement = conn.prepareStatement(sql);
+			for (String placeID : placeIDs) {
+				statement.setString(1, placeID);
+				rs = statement.executeQuery();
+				while (rs.next()) {
+					String name = rs.getString("name");
+					double lat = rs.getDouble("lat");
+					double lon = rs.getDouble("lon");
+					String url = rs.getString("imageURL");
+					String type = "poi";
+					Place p = new PlaceBuilder().setPlaceID(placeID).setName(name).setLat(lat).setLon(lon).setURL(url)
+							.build();
+					path.add(p);
+				}
+			}
+			return path;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 }

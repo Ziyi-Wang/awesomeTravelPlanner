@@ -3,7 +3,10 @@ package rpc;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import entity.Place;
+import entity.Place.PlaceBuilder;
 
 public class RpcHelper {
 
@@ -57,5 +63,22 @@ public class RpcHelper {
 			changeMap.put(t.getString("placeID"), t.getInt("day"));
 		}
 		return changeMap;
+	}
+
+	public static List<Place> parseGeneratePath(JSONObject req) throws JSONException {
+		List<Place> startPlaces = new ArrayList<>();
+		String userID = req.getString("userID");
+		JSONArray array = req.getJSONArray("startPlaces");
+
+		for (int i = 0; i < array.length(); i++) {
+			JSONObject obj = array.getJSONObject(i);
+			PlaceBuilder builder = new PlaceBuilder();
+			Place p = builder.setName(obj.getString("name")).setLat(obj.getDouble("lat")).setLon(obj.getDouble("lon"))
+					.setPlaceID(obj.getString("placeID")).setType(obj.getString("type"))
+					.setURL(obj.getString("imageURL")).build();
+
+			startPlaces.add(p);
+		}
+		return startPlaces;
 	}
 }

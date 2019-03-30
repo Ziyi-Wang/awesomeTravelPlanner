@@ -15,6 +15,8 @@ public interface DBConnection {
 
 	public void saveRoute(String userID, List<List<Place>> places);
 
+	public void savePlace(List<Place> places);
+
 	public void updateSchedule(String userID, Map<String, Integer> newSchedule);
 
 	public boolean registerUser(String userId, String password, String firstname, String lastname);
@@ -24,4 +26,6 @@ public interface DBConnection {
 	public List<List<Place>> generatePath(String userID, List<Place> startPlaces);
 
 	public List<Place> generateDailyPath(String userID, int day, Place startPlace);
+
+	public List<Place> getDailyPlaces(String userID, int day);
 }

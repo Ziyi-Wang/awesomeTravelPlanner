@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +66,6 @@ public class RpcHelper {
 
 	public static List<Place> parseGeneratePath(JSONObject req) throws JSONException {
 		List<Place> startPlaces = new ArrayList<>();
-		String userID = req.getString("userID");
 		JSONArray array = req.getJSONArray("startPlaces");
 
 		for (int i = 0; i < array.length(); i++) {

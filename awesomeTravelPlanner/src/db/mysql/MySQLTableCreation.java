@@ -3,6 +3,12 @@ package db.mysql;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+
+import db.DBConnection;
+import entity.Place;
+import external.GooglePlaceAPI;
+
 import java.sql.Connection;
 
 public class MySQLTableCreation {
@@ -23,11 +29,20 @@ public class MySQLTableCreation {
 
 			createPlaceTable(conn);
 
+			initializePlaceTable();
+
 			conn.close();
 			System.out.println("Tables created successfully");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static void initializePlaceTable() {
+		int entries = 30;
+		List<Place> places = GooglePlaceAPI.searchTopKPlaces(entries);
+		DBConnection conn = new MySQLConnection();
+		conn.savePlace(places);
 	}
 
 	private static void createPlaceTable(Connection conn) throws SQLException {

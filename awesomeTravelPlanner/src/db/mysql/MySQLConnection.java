@@ -78,6 +78,26 @@ public class MySQLConnection implements DBConnection {
 	}
 
 	@Override
+	public void savePlace(List<Place> places) {
+		for (int i = 0; i < places.size(); i++) {
+			Place place = places.get(i);
+			String sql = "INSERT IGNORE INTO places VALUES (?, ?, ?, ?, ?)";
+			try {
+				PreparedStatement ps = conn.prepareStatement(sql);
+				ps.setString(1, place.getPlaceID());
+				ps.setString(2, place.getName());
+				ps.setString(3, String.valueOf(place.getLat()));
+				ps.setString(4, String.valueOf(place.getLon()));
+				ps.setString(5, place.getImageURL());
+				ps.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	@Override
 	public void updateSchedule(String userID, Map<String, Integer> newSchedule) {
 		for (Map.Entry<String, Integer> entry : newSchedule.entrySet()) {
 			try {
@@ -173,7 +193,7 @@ public class MySQLConnection implements DBConnection {
 	}
 
 	@Override
-	public List<Place> generateDailyPath(String userID, int day, Place startPlace) {
+	public List<Place> getDailyPlaces(String userID, int day) {
 		try {
 			// 1. get placeID for this user on this day
 			String sql = "SELECT * FROM routes WHERE user_id = ? AND day = ? ";
@@ -202,7 +222,7 @@ public class MySQLConnection implements DBConnection {
 					String url = rs.getString("imageURL");
 					String type = "poi";
 					Place p = new PlaceBuilder().setPlaceID(placeID).setName(name).setLat(lat).setLon(lon).setURL(url)
-							.build();
+							.setType(type).build();
 					path.add(p);
 				}
 			}
@@ -213,5 +233,14 @@ public class MySQLConnection implements DBConnection {
 		}
 
 		return null;
+
 	}
+
+	@Override
+	public List<Place> generateDailyPath(String userID, int day, Place startPlace) {
+		List<Place> middlePlaces = getDailyPlaces(userID, day);
+		middlePlaces.add(0, startPlace);
+		return middlePlaces;
+	}
+
 }

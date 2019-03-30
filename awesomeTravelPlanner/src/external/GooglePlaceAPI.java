@@ -1,6 +1,9 @@
 package external;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -17,9 +20,9 @@ import entity.Place;
 import entity.Place.PlaceBuilder;
 import secrets.Keys;
 
-public class GoogleAPI {
+public class GooglePlaceAPI {
 	// correct URL
-	// https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=Museum%20of%20Contemporary%20Art%20Australia&inputtype=textquery&fields=photos,formatted_address,name,rating,opening_hours,geometry&key=AIzaSyC7icI6IG_bNd1Km1iKkFzn2exDMb17BuU
+	// https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=Museum%20of%20Contemporary%20Art%20Australia&inputtype=textquery&fields=photos,formatted_address,name,rating,opening_hours,geometry&key=API_KEY
 	public static Place searchPlace(String name) {
 		try {
 			name = URLEncoder.encode(name, "UTF-8");
@@ -41,6 +44,8 @@ public class GoogleAPI {
 			System.out.println("Response code: " + responseCode);
 
 			if (responseCode != 200) {
+				System.out.println("error in searchPlace, name = " + name);
+				System.out.println("error code is " + responseCode);
 				return null;
 			}
 
@@ -55,8 +60,6 @@ public class GoogleAPI {
 
 			JSONObject obj = new JSONObject(response.toString());
 
-			System.out.println(response.toString());
-
 			if (!obj.isNull("candidates")) {
 				return getPlaceList(obj.getJSONArray("candidates")).get(0);
 			}
@@ -69,10 +72,12 @@ public class GoogleAPI {
 	}
 
 	public static List<Place> searchTopKPlaces(int k) {
-		String[] names = { "time square", "museum of modern art", "world trade center", "NYU", "Columbus Circle" };
+		// String[] names = { "time square", "museum of modern art", "world trade
+		// center", "NYU", "Columbus Circle" };
+		List<String> names = GooglePlaceAPI.loadPlaceNames();
 		List<Place> places = new ArrayList<>();
-		for (String name : names) {
-			places.add(searchPlace(name));
+		for (int i = 0; i < k; i++) {
+			places.add(searchPlace(names.get(i)));
 		}
 		return places;
 	}
@@ -112,10 +117,26 @@ public class GoogleAPI {
 			placeList.add(builder.build());
 		}
 
-		System.out.println("finished placeList");
-		for (Place p : placeList) {
-			p.show();
-		}
 		return placeList;
 	}
+
+	private static List<String> loadPlaceNames() {
+		List<String> names = new ArrayList<>();
+
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(APIUtils.topPlacesFilePath));
+			String line = reader.readLine();
+			while (line != null) {
+				names.add(line);
+				line = reader.readLine();
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return names;
+	}
+
 }

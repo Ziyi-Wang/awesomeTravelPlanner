@@ -19,7 +19,7 @@ import entity.Place;
 /**
  * Servlet implementation class initial_recommend
  */
-@WebServlet("/initial_recommend")
+@WebServlet("/InitialRecommend")
 public class InitialRecommend extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -30,8 +30,9 @@ public class InitialRecommend extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
-		int day = 1;
-		String userID = "testUser";
+		int day = Integer.parseInt(request.getParameter("totalDays"));
+		String userID = request.getParameter("userID");
+
 		DBConnection connection = DBConnectionFactory.getConnection("mysql");
 		try {
 			List<List<Place>> places = connection.getInitialRecommend(userID, day);
@@ -45,7 +46,8 @@ public class InitialRecommend extends HttpServlet {
 					array.put(obj);
 				}
 			}
-			RpcHelper.writeJsonArray(response, array);
+			JSONObject res = new JSONObject().put("places", array);
+			RpcHelper.writeJsonObject(response, res);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

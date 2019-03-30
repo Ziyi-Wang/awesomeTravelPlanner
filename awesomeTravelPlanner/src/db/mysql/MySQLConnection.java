@@ -11,7 +11,7 @@ import java.util.Map;
 
 import db.DBConnection;
 import entity.Place;
-import external.GoogleAPI;
+import external.GooglePlaceAPI;
 
 public class MySQLConnection implements DBConnection {
 	private Connection conn;
@@ -37,7 +37,7 @@ public class MySQLConnection implements DBConnection {
 	@Override
 	public List<List<Place>> getInitialRecommend(String userID, int nDay) {
 		int nPlaceDaily = 5;
-		List<Place> places = GoogleAPI.searchTopKPlaces(5);
+		List<Place> places = GooglePlaceAPI.searchTopKPlaces(nDay * nPlaceDaily);
 		List<List<Place>> res = new ArrayList<>();
 		for (int i = 0; i < nDay; i++) {
 			List<Place> t = new ArrayList<>();

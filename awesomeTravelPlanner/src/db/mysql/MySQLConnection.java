@@ -49,6 +49,7 @@ public class MySQLConnection implements DBConnection {
 		}
 
 		if (userID != null) {
+			deleteRoute(userID);
 			saveRoute(userID, res);
 		}
 
@@ -74,6 +75,18 @@ public class MySQLConnection implements DBConnection {
 				}
 
 			}
+		}
+	}
+
+	public void deleteRoute(String userID) {
+
+		String sql = "DELETE FROM routes WHERE user_id = ? ";
+		try {
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, userID);
+			ps.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 

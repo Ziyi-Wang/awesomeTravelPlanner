@@ -15,6 +15,8 @@ public interface DBConnection {
 
 	public void saveRoute(String userID, List<List<Place>> places);
 
+	public void deleteRoute(String userID);
+
 	public void savePlace(List<Place> places);
 
 	public void updateSchedule(String userID, Map<String, Integer> newSchedule);

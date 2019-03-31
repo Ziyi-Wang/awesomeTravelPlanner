@@ -7,9 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import db.DBConnection;
+import entity.Change;
 import entity.Place;
 import entity.Place.PlaceBuilder;
 import external.GooglePlaceAPI;
@@ -111,44 +111,31 @@ public class MySQLConnection implements DBConnection {
 	}
 
 	@Override
-	public void updateSchedule(String userID, Map<String, Integer> newSchedule) {
-		for (Map.Entry<String, Integer> entry : newSchedule.entrySet()) {
+	public void updateSchedule(String userID, List<Change> newSchedule) {
+		for (Change change : newSchedule) {
 			try {
-				String name = null;
-				String sql = "SELECT user_id FROM routes WHERE user_id = ? AND place_id = ?";
-				PreparedStatement statement = conn.prepareStatement(sql);
-				statement.setString(1, userID);
-				statement.setString(2, entry.getKey());
-				ResultSet rs = statement.executeQuery();
-
-				while (rs.next()) {
-					name = rs.getString("user_id");
-				}
-				// if the entry doesn't exist, do nothing
-				if (name == null) {
-					continue;
-				}
-
-				if (entry.getValue() != -1) {
+				if (change.getDay() != -1) {
 					// update
-					sql = "UPDATE routes SET day = ? WHERE user_id = ? AND place_id = ?";
+					String sql = "UPDATE routes SET day = ?, index_of_day = ? WHERE user_id = ? AND place_id = ?";
+					System.out.println(sql);
 					PreparedStatement ps = conn.prepareStatement(sql);
-					ps.setInt(1, entry.getValue());
-					ps.setString(2, userID);
-					ps.setString(3, entry.getKey());
+					ps.setInt(1, change.getDay());
+					ps.setInt(2, change.getIntradayIndex());
+					ps.setString(3, userID);
+					ps.setString(4, change.getPlaceID());
 					ps.execute();
 				} else {
 					// delete
-					sql = "DELETE FROM routes WHERE user_id = ? AND place_id = ?";
+					String sql = "DELETE FROM routes WHERE user_id = ? AND place_id = ?";
 					PreparedStatement ps = conn.prepareStatement(sql);
 					ps.setString(1, userID);
-					ps.setString(2, entry.getKey());
+					ps.setString(2, change.getPlaceID());
 					ps.execute();
 				}
-
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
+
 		}
 	}
 

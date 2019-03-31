@@ -1,8 +1,8 @@
 package db;
 
 import java.util.List;
-import java.util.Map;
 
+import entity.Change;
 import entity.Place;
 
 public interface DBConnection {
@@ -19,7 +19,7 @@ public interface DBConnection {
 
 	public void savePlace(List<Place> places);
 
-	public void updateSchedule(String userID, Map<String, Integer> newSchedule);
+	public void updateSchedule(String userID, List<Change> newSchedule);
 
 	public boolean registerUser(String userId, String password, String firstname, String lastname);
 

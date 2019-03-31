@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import entity.Change;
 import entity.Place;
 import entity.Place.PlaceBuilder;
 
@@ -62,6 +63,15 @@ public class RpcHelper {
 			changeMap.put(t.getString("placeID"), t.getInt("day"));
 		}
 		return changeMap;
+	}
+
+	public static List<Change> parseChanges(JSONArray changes) throws JSONException {
+		List<Change> res = new ArrayList<>();
+		for (int i = 0; i < changes.length(); i++) {
+			JSONObject obj = changes.getJSONObject(i);
+			res.add(new Change(obj.getString("placeID"), obj.getInt("day"), obj.getInt("intradayIndex")));
+		}
+		return res;
 	}
 
 	public static List<Place> parseGeneratePath(JSONObject req) throws JSONException {

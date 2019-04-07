@@ -50,6 +50,7 @@ public class Place {
 	}
 
 	public void show() {
+		System.out.println(placeID);
 		System.out.println(type);
 		System.out.println(name);
 		System.out.println(lat);

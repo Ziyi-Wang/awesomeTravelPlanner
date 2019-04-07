@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import db.DBConnection;
@@ -91,23 +92,56 @@ public class MySQLConnection implements DBConnection {
 	}
 
 	@Override
-	public void savePlace(List<Place> places) {
-		for (int i = 0; i < places.size(); i++) {
-			Place place = places.get(i);
-			String sql = "INSERT IGNORE INTO places VALUES (?, ?, ?, ?, ?)";
-			try {
-				PreparedStatement ps = conn.prepareStatement(sql);
-				ps.setString(1, place.getPlaceID());
-				ps.setString(2, place.getName());
-				ps.setString(3, String.valueOf(place.getLat()));
-				ps.setString(4, String.valueOf(place.getLon()));
-				ps.setString(5, place.getImageURL());
-				ps.execute();
-			} catch (SQLException e) {
-				e.printStackTrace();
+	public Place getPlace(String placeID) {
+		String sql = "SELECT * FROM places WHERE place_id = ? ";
+		try {
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, placeID);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				String name = rs.getString("name");
+				double lat = rs.getDouble("lat");
+				double lon = rs.getDouble("lon");
+				String url = rs.getString("imageURL");
+				String type = "poi";
+				Place p = new PlaceBuilder().setPlaceID(placeID).setName(name).setLat(lat).setLon(lon).setURL(url)
+						.setType(type).build();
+				return p;
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
+		return null;
+	}
+
+	@Override
+	public void savePlace(Place p) {
+		String sql = "INSERT IGNORE INTO places VALUES (?, ?, ?, ?, ?)";
+		try {
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, p.getPlaceID());
+			ps.setString(2, p.getName());
+			ps.setString(3, String.valueOf(p.getLat()));
+			ps.setString(4, String.valueOf(p.getLon()));
+			ps.setString(5, p.getImageURL());
+			ps.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void savePlace(List<Place> places) {
+		for (int i = 0; i < places.size(); i++) {
+			savePlace(places.get(i));
+		}
+	}
+
+	@Override
+	public void savePlace(String placeID) {
+		savePlace(GooglePlaceAPI.searchUsingPlaceID(placeID));
 	}
 
 	@Override
@@ -189,11 +223,29 @@ public class MySQLConnection implements DBConnection {
 		for (int i = 0; i < startPlaces.size(); i++) {
 			res.add(generateDailyPath(userID, i, startPlaces.get(i)));
 		}
+
+		deleteRoute(userID);
+		saveRoute(userID, res);
 		return res;
 	}
 
 	@Override
 	public List<Place> getDailyPlaces(String userID, int day) {
+		class Info implements Comparable<Info> {
+			int intradayIndex;
+			String placeID;
+
+			public Info(int intradayIndex, String placeID) {
+				this.intradayIndex = intradayIndex;
+				this.placeID = placeID;
+			}
+
+			@Override
+			public int compareTo(Info b) {
+				return Integer.valueOf(intradayIndex).compareTo(Integer.valueOf(intradayIndex));
+			}
+		}
+
 		try {
 			// 1. get placeID for this user on this day
 			String sql = "SELECT * FROM routes WHERE user_id = ? AND day = ? ";
@@ -201,30 +253,16 @@ public class MySQLConnection implements DBConnection {
 			statement.setString(1, userID);
 			statement.setInt(2, day);
 			ResultSet rs = statement.executeQuery();
-			List<String> placeIDs = new ArrayList<>();
+			List<Info> routeInfo = new ArrayList<>();
 			while (rs.next()) {
-				placeIDs.add(rs.getString("place_id"));
+				routeInfo.add(new Info(rs.getInt("index_of_day"), rs.getString("place_id")));
 			}
-			System.out.println(placeIDs);
+			Collections.sort(routeInfo);
 
 			// 2. query place database and get place objects
 			List<Place> path = new ArrayList<>();
-
-			sql = "SELECT * FROM places WHERE place_id = ? ";
-			statement = conn.prepareStatement(sql);
-			for (String placeID : placeIDs) {
-				statement.setString(1, placeID);
-				rs = statement.executeQuery();
-				while (rs.next()) {
-					String name = rs.getString("name");
-					double lat = rs.getDouble("lat");
-					double lon = rs.getDouble("lon");
-					String url = rs.getString("imageURL");
-					String type = "poi";
-					Place p = new PlaceBuilder().setPlaceID(placeID).setName(name).setLat(lat).setLon(lon).setURL(url)
-							.setType(type).build();
-					path.add(p);
-				}
+			for (Info info : routeInfo) {
+				path.add(getPlace(info.placeID));
 			}
 			return path;
 
@@ -233,7 +271,33 @@ public class MySQLConnection implements DBConnection {
 		}
 
 		return null;
+	}
 
+	@Override
+	public List<List<Place>> getPlaces(String userID) {
+		// return an empty list if userID not exist
+		// return null if error happens
+		try {
+			// 1. get placeID for this user on this day
+			String sql = "SELECT day FROM routes WHERE user_id = ?";
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, userID);
+			ResultSet rs = statement.executeQuery();
+			int maxDay = -1;
+			while (rs.next()) {
+				maxDay = Math.max(maxDay, rs.getInt("day"));
+			}
+			// 2. get places for each day and aggregate
+			List<List<Place>> places = new ArrayList<>();
+			for (int i = 0; i <= maxDay; i++) {
+				places.add(getDailyPlaces(userID, i));
+			}
+			return places;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	@Override

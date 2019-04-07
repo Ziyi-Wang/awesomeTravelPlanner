@@ -17,7 +17,13 @@ public interface DBConnection {
 
 	public void deleteRoute(String userID);
 
+	public Place getPlace(String placeID);
+
 	public void savePlace(List<Place> places);
+
+	public void savePlace(Place p);
+
+	public void savePlace(String placeID);
 
 	public void updateSchedule(String userID, List<Change> newSchedule);
 
@@ -30,4 +36,6 @@ public interface DBConnection {
 	public List<Place> generateDailyPath(String userID, int day, Place startPlace);
 
 	public List<Place> getDailyPlaces(String userID, int day);
+
+	public List<List<Place>> getPlaces(String userID);
 }

@@ -70,6 +70,31 @@ public class GooglePlaceAPI {
 		return null;
 	}
 
+	public static Place searchUsingPlaceID(String placeID) {
+		// refer
+		// https://developers.google.com/places/web-service/details#PlaceDetailsRequests
+		String baseURL = "https://maps.googleapis.com/maps/api/place/details/json?";
+		String URL = baseURL + "key=" + Keys.GOOGLE_API_KEY + "&" + "placeid=" + placeID;
+		URL += "&fields=place_id,photos,name,rating,geometry";
+
+		JSONObject response = APIUtils.queryURL(URL);
+		try {
+			JSONObject o = response.getJSONObject("result");
+
+			JSONObject location = o.getJSONObject("geometry").getJSONObject("location");
+			double lat = location.getDouble("lat");
+			double lon = location.getDouble("lng");
+
+			String name = o.getString("name");
+			placeID = o.getString("place_id");
+			return new PlaceBuilder().setPlaceID(placeID).setName(name).setLat(lat).setLon(lon).build();
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public static List<Place> searchTopKPlaces(int k) {
 		// String[] names = { "time square", "museum of modern art", "world trade
 		// center", "NYU", "Columbus Circle" };
@@ -138,4 +163,7 @@ public class GooglePlaceAPI {
 		return names;
 	}
 
+	public static void main(String[] args) {
+		searchUsingPlaceID("ChIJhRwB-yFawokR5Phil-QQ3zM").show();
+	}
 }

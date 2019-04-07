@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,15 +52,6 @@ public class RpcHelper {
 		PrintWriter out = response.getWriter();
 		out.print(obj);
 		out.close();
-	}
-
-	public static Map<String, Integer> parseSchedule(JSONArray changes) throws JSONException {
-		Map<String, Integer> changeMap = new HashMap<>();
-		for (int i = 0; i < changes.length(); i++) {
-			JSONObject t = (JSONObject) changes.get(i);
-			changeMap.put(t.getString("placeID"), t.getInt("day"));
-		}
-		return changeMap;
 	}
 
 	public static List<Change> parseChanges(JSONArray changes) throws JSONException {

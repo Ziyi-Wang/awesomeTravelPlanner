@@ -13,11 +13,11 @@ public interface DBConnection {
 
 	public List<List<Place>> getInitialRecommend(String userID, int nDay);
 
-	public void saveRoute(String userID, List<List<Place>> places);
+	public void saveRoute(String userID, List<List<Place>> places, int offset);
 
 	public void deleteRoute(String userID);
 
-	public Place getPlace(String placeID);
+	public Place getPlace(String placeID, String type);
 
 	public void savePlace(List<Place> places);
 

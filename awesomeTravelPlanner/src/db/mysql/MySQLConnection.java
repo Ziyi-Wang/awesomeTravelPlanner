@@ -51,30 +51,32 @@ public class MySQLConnection implements DBConnection {
 
 		if (userID != null) {
 			deleteRoute(userID);
-			saveRoute(userID, res);
+			saveRoute(userID, res, 1);
 		}
 
 		return res;
 	}
 
 	@Override
-	public void saveRoute(String userID, List<List<Place>> places) {
+	public void saveRoute(String userID, List<List<Place>> places, int offset) {
+		// offset = 1 for initial recommend save, since the point of interest
+		// intradayIndex starts from 1
 		for (int i = 0; i < places.size(); i++) {
 			List<Place> dailyPlace = places.get(i);
 			for (int j = 0; j < dailyPlace.size(); j++) {
 				Place place = dailyPlace.get(j);
-				String sql = "INSERT IGNORE INTO routes VALUES (?, ?, ?, ?)";
+				String sql = "INSERT IGNORE INTO routes VALUES (?, ?, ?, ?, ?)";
 				try {
 					PreparedStatement ps = conn.prepareStatement(sql);
 					ps.setString(1, userID);
 					ps.setString(2, place.getPlaceID());
 					ps.setString(3, String.valueOf(i));
-					ps.setString(4, String.valueOf(j));
+					ps.setString(4, String.valueOf(j + offset));
+					ps.setString(5, place.getType());
 					ps.execute();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-
 			}
 		}
 	}
@@ -92,7 +94,7 @@ public class MySQLConnection implements DBConnection {
 	}
 
 	@Override
-	public Place getPlace(String placeID) {
+	public Place getPlace(String placeID, String type) {
 		String sql = "SELECT * FROM places WHERE place_id = ? ";
 		try {
 			PreparedStatement statement = conn.prepareStatement(sql);
@@ -104,7 +106,6 @@ public class MySQLConnection implements DBConnection {
 				double lat = rs.getDouble("lat");
 				double lon = rs.getDouble("lon");
 				String url = rs.getString("imageURL");
-				String type = "poi";
 				Place p = new PlaceBuilder().setPlaceID(placeID).setName(name).setLat(lat).setLon(lon).setURL(url)
 						.setType(type).build();
 				return p;
@@ -225,7 +226,7 @@ public class MySQLConnection implements DBConnection {
 		}
 
 		deleteRoute(userID);
-		saveRoute(userID, res);
+		saveRoute(userID, res, 0);
 		return res;
 	}
 
@@ -234,15 +235,23 @@ public class MySQLConnection implements DBConnection {
 		class Info implements Comparable<Info> {
 			int intradayIndex;
 			String placeID;
+			String type;
 
-			public Info(int intradayIndex, String placeID) {
+			public Info(int intradayIndex, String placeID, String type) {
 				this.intradayIndex = intradayIndex;
 				this.placeID = placeID;
+				this.type = type;
 			}
 
 			@Override
 			public int compareTo(Info b) {
-				return Integer.valueOf(intradayIndex).compareTo(Integer.valueOf(intradayIndex));
+				if (type.equals("start")) {
+					return -1;
+				} else if (b.type.equals("start")) {
+					return 1;
+				} else {
+					return Integer.valueOf(intradayIndex).compareTo(Integer.valueOf(intradayIndex));
+				}
 			}
 		}
 
@@ -255,14 +264,14 @@ public class MySQLConnection implements DBConnection {
 			ResultSet rs = statement.executeQuery();
 			List<Info> routeInfo = new ArrayList<>();
 			while (rs.next()) {
-				routeInfo.add(new Info(rs.getInt("index_of_day"), rs.getString("place_id")));
+				routeInfo.add(new Info(rs.getInt("index_of_day"), rs.getString("place_id"), rs.getString("type")));
 			}
 			Collections.sort(routeInfo);
 
 			// 2. query place database and get place objects
 			List<Place> path = new ArrayList<>();
 			for (Info info : routeInfo) {
-				path.add(getPlace(info.placeID));
+				path.add(getPlace(info.placeID, info.type));
 			}
 			return path;
 

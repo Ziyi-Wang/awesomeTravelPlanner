@@ -25,11 +25,11 @@ public class MySQLTableCreation {
 
 			createRouteTable(conn);
 
-			createUserTable(conn);
+//			createUserTable(conn);
 
-			createPlaceTable(conn);
+//			createPlaceTable(conn);
 
-			initializePlaceTable();
+//			initializePlaceTable();
 
 			conn.close();
 			System.out.println("Tables created successfully");
@@ -71,7 +71,7 @@ public class MySQLTableCreation {
 		statement.executeUpdate(sql);
 
 		sql = "CREATE TABLE routes (" + "user_id VARCHAR(255) NOT NULL," + "place_id VARCHAR(255)," + "day INT,"
-				+ "index_of_day INT" + ")";
+				+ "index_of_day INT," + "type VARCHAR(255)" + ")";
 		statement.executeUpdate(sql);
 	}
 }

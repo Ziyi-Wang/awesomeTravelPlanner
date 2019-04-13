@@ -1,14 +1,15 @@
 package db;
 
+import java.sql.Connection;
 import java.util.List;
 
 import entity.Change;
 import entity.Place;
 
 public interface DBConnection {
-	/**
-	 * Close the connection.
-	 */
+
+	public Connection getConn();
+
 	public void close();
 
 	public List<List<Place>> getInitialRecommend(String userID, int nDay);
@@ -24,6 +25,10 @@ public interface DBConnection {
 	public void savePlace(Place p);
 
 	public void savePlace(String placeID);
+
+	public void saveDistance(String startPlaceID, String endPlaceID, double distance);
+
+	public Double getDistance(String startPlaceID, String endPlaceID);
 
 	public void updateSchedule(String userID, List<Change> newSchedule);
 

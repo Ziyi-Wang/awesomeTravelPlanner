@@ -14,6 +14,7 @@ import entity.Change;
 import entity.Place;
 import entity.Place.PlaceBuilder;
 import external.GooglePlaceAPI;
+import routePlannerAlgo.PlannerAlgo;
 
 public class MySQLConnection implements DBConnection {
 	private Connection conn;
@@ -25,6 +26,11 @@ public class MySQLConnection implements DBConnection {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public Connection getConn() {
+		return conn;
 	}
 
 	@Override
@@ -321,8 +327,46 @@ public class MySQLConnection implements DBConnection {
 			}
 		}
 		middlePlaces.remove(p);
-		middlePlaces.add(0, startPlace);
-		return middlePlaces;
+		// middlePlaces.add(0, startPlace); // default algo, deprecated
+		return PlannerAlgo.getPath(startPlace, middlePlaces);
+	}
+
+	@Override
+	public void saveDistance(String startPlaceID, String endPlaceID, double distance) {
+		String sql = "INSERT IGNORE INTO distances VALUES (?, ?, ?)";
+		try {
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, startPlaceID);
+			ps.setString(2, endPlaceID);
+			ps.setDouble(3, distance);
+			ps.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public Double getDistance(String startPlaceID, String endPlaceID) {
+		try {
+			// 1. get placeID for this user on this day
+			String sql = "SELECT distance FROM distances WHERE start_place_id = ? AND end_place_id = ?";
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, startPlaceID);
+			statement.setString(2, endPlaceID);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				return rs.getDouble("distance");
+			}
+			throw new Exception("no distance information found for (startPlaceID,endPlaceID) = (" + startPlaceID + ","
+					+ endPlaceID + ")");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 }

@@ -1,12 +1,16 @@
 package db.mysql;
 
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import db.DBConnection;
 import entity.Place;
+import external.GoogleDirectionsAPI;
 import external.GooglePlaceAPI;
 
 import java.sql.Connection;
@@ -27,9 +31,12 @@ public class MySQLTableCreation {
 
 //			createUserTable(conn);
 
-			createPlaceTable(conn);
+//			createPlaceTable(conn);
 
-			initializePlaceTable();
+//			initializePlaceTable();
+
+			createDistanceTable(conn, "distances");
+			initializeDistanceTable("distances");
 
 			conn.close();
 			System.out.println("Tables created successfully");
@@ -74,5 +81,43 @@ public class MySQLTableCreation {
 		sql = "CREATE TABLE routes (" + "user_id VARCHAR(255) NOT NULL," + "place_id VARCHAR(255)," + "day INT,"
 				+ "index_of_day INT," + "type VARCHAR(255)" + ")";
 		statement.executeUpdate(sql);
+	}
+
+	private static void createDistanceTable(Connection conn, String tableName) throws SQLException {
+		Statement statement = conn.createStatement();
+		String sql = "DROP TABLE IF EXISTS " + tableName;
+		statement.executeUpdate(sql);
+
+		sql = "CREATE TABLE " + tableName + " (" + "start_place_id VARCHAR(255)," + "end_place_id VARCHAR(255),"
+				+ "distance DOUBLE" + ")";
+		statement.executeUpdate(sql);
+	}
+
+	private static void initializeDistanceTable(String tableName) {
+		List<String> placeIDs = getPlaceIDs(tableName);
+
+		DBConnection dbcon = new MySQLConnection();
+		for (int i = 0; i < placeIDs.size(); i++) {
+			for (int j = 0; j < placeIDs.size(); j++) {
+				double distance = GoogleDirectionsAPI.getDistance(placeIDs.get(i), placeIDs.get(j));
+				dbcon.saveDistance(placeIDs.get(i), placeIDs.get(j), distance);
+			}
+		}
+	}
+
+	private static List<String> getPlaceIDs(String tableName) {
+		List<String> placeIDs = new ArrayList<>();
+		try {
+			String sql = "SELECT place_id FROM places";
+			PreparedStatement statement = new MySQLConnection().getConn().prepareStatement(sql);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				placeIDs.add(rs.getString("place_id"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return placeIDs;
 	}
 }

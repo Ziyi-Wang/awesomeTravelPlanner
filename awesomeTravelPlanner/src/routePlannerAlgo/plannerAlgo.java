@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import entity.Place;
 import external.GoogleDirectionsAPI;
 
 class Res {
@@ -15,16 +16,19 @@ class Res {
 	}
 }
 
-public class plannerAlgo {
+public class PlannerAlgo {
 
-	public static List<String> getPath(String startPlaceID, List<String> midPlaces) {
+	public static List<Place> getPath(Place startPlace, List<Place> middlePlaces) {
 		// graph[i][j] is the traveling distance between place i and place j
 		// staring point is index 0 in the graph
 		// first place in midPlaces has index 1, second place in midPlaces has index 2,
 		// etc
 		List<String> places = new ArrayList<>();
-		places.add(startPlaceID);
-		places.addAll(midPlaces);
+		places.add(startPlace.getPlaceID());
+
+		for (Place midPlace : middlePlaces) {
+			places.add(midPlace.getPlaceID());
+		}
 
 		double[][] graph = createDistanceGraph(places);
 
@@ -32,12 +36,16 @@ public class plannerAlgo {
 		currPath.add(0); // add starting point
 
 		HashSet<Integer> visited = new HashSet<>();
+		visited.add(0);
+
 		Res res = new Res();
 		dfs(graph, currPath, 0, visited, res);
 
-		List<String> resPath = new ArrayList<>();
+		List<Place> resPath = new ArrayList<>();
+		resPath.add(startPlace);
+
 		for (int i = 1; i < res.bestPath.size(); i++) {
-			resPath.add(midPlaces.get(res.bestPath.get(i) - 1));
+			resPath.add(middlePlaces.get(res.bestPath.get(i) - 1));
 		}
 
 		return resPath;

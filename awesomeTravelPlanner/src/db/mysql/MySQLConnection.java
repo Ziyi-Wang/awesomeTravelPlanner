@@ -45,7 +45,8 @@ public class MySQLConnection implements DBConnection {
 	@Override
 	public List<List<Place>> getInitialRecommend(String userID, int nDay) {
 		int nPlaceDaily = 5;
-		List<Place> places = GooglePlaceAPI.searchTopKPlaces(nDay * nPlaceDaily);
+		List<Place> places = getRandomKPlaces(nDay * nPlaceDaily);
+
 		List<List<Place>> res = new ArrayList<>();
 		for (int i = 0; i < nDay; i++) {
 			List<Place> t = new ArrayList<>();
@@ -55,11 +56,32 @@ public class MySQLConnection implements DBConnection {
 			res.add(t);
 		}
 
-		if (userID != null) {
-			deleteRoute(userID);
-			saveRoute(userID, res, 1);
-		}
+		deleteRoute(userID);
+		saveRoute(userID, res, 1);
 
+		return res;
+	}
+
+	List<Place> getRandomKPlaces(int n) {
+		List<Place> res = new ArrayList<>();
+		String sql = "SELECT * FROM places ORDER BY RAND() LIMIT " + String.valueOf(n);
+		try {
+			PreparedStatement statement = conn.prepareStatement(sql);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				String placeID = rs.getString("place_id");
+				String name = rs.getString("name");
+				double lat = rs.getDouble("lat");
+				double lon = rs.getDouble("lon");
+				String url = rs.getString("imageURL");
+				Place p = new PlaceBuilder().setPlaceID(placeID).setName(name).setLat(lat).setLon(lon).setURL(url)
+						.setType("poi").build();
+				res.add(p);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return res;
 	}
 

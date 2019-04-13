@@ -23,13 +23,13 @@ public class MySQLTableCreation {
 				return;
 			}
 
-			createRouteTable(conn);
+//			createRouteTable(conn);
 
 //			createUserTable(conn);
 
-//			createPlaceTable(conn);
+			createPlaceTable(conn);
 
-//			initializePlaceTable();
+			initializePlaceTable();
 
 			conn.close();
 			System.out.println("Tables created successfully");
@@ -39,7 +39,8 @@ public class MySQLTableCreation {
 	}
 
 	private static void initializePlaceTable() {
-		int entries = 30;
+		// use a large number to ensure all places in the list is added
+		int entries = 1000;
 		List<Place> places = GooglePlaceAPI.searchTopKPlaces(entries);
 		DBConnection conn = new MySQLConnection();
 		conn.savePlace(places);

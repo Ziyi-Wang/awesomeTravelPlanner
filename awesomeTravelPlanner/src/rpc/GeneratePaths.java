@@ -40,7 +40,6 @@ public class GeneratePaths extends HttpServlet {
 			}
 
 			JSONObject obj = new JSONObject().put("places", array);
-			System.out.println("this is" + obj);
 			RpcHelper.writeJsonObject(response, obj);
 		} catch (Exception e) {
 			e.printStackTrace();

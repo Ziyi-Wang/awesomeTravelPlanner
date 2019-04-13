@@ -34,9 +34,11 @@ public class Register extends HttpServlet {
 			String lastname = input.getString("lastName");
 
 			JSONObject obj = new JSONObject();
+
 			if (conn.registerUser(userId, password, firstname, lastname)) {
 				obj.put("status", "OK");
 			} else {
+				response.setStatus(400);
 				obj.put("status", "User Already Exists");
 			}
 			RpcHelper.writeJsonObject(response, obj);

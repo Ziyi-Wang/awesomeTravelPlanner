@@ -110,6 +110,7 @@ public class MySQLConnection implements DBConnection {
 						.setType(type).build();
 				return p;
 			}
+			throw new Exception("Item not found in TABLE place for placeID = " + placeID);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -152,7 +153,6 @@ public class MySQLConnection implements DBConnection {
 				if (change.getDay() != -1) {
 					// update
 					String sql = "UPDATE routes SET day = ?, index_of_day = ? WHERE user_id = ? AND place_id = ?";
-					System.out.println(sql);
 					PreparedStatement ps = conn.prepareStatement(sql);
 					ps.setInt(1, change.getDay());
 					ps.setInt(2, change.getIntradayIndex());
@@ -311,7 +311,16 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public List<Place> generateDailyPath(String userID, int day, Place startPlace) {
+		Place p = null;
 		List<Place> middlePlaces = getDailyPlaces(userID, day);
+
+		for (Place place : middlePlaces) {
+			if (place.getType().equals("start")) {
+				p = place;
+				break;
+			}
+		}
+		middlePlaces.remove(p);
 		middlePlaces.add(0, startPlace);
 		return middlePlaces;
 	}

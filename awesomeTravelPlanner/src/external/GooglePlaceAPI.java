@@ -39,8 +39,6 @@ public class GooglePlaceAPI {
 			connection.setRequestMethod("GET");
 
 			int responseCode = connection.getResponseCode();
-			System.out.println("Sending request to url: " + url);
-			System.out.println("Response code: " + responseCode);
 
 			if (responseCode != 200) {
 				System.out.println("error in searchPlace, name = " + name);
@@ -59,13 +57,14 @@ public class GooglePlaceAPI {
 
 			JSONObject obj = new JSONObject(response.toString());
 
-			if (!obj.isNull("candidates")) {
+			if (!obj.getString("status").equals("ZERO_RESULTS")) {
 				return getPlaceList(obj.getJSONArray("candidates")).get(0);
 			}
 			return null;
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.out.println(url);
 		}
 		return null;
 	}
@@ -100,8 +99,14 @@ public class GooglePlaceAPI {
 		// center", "NYU", "Columbus Circle" };
 		List<String> names = GooglePlaceAPI.loadPlaceNames();
 		List<Place> places = new ArrayList<>();
-		for (int i = 0; i < k; i++) {
-			places.add(searchPlace(names.get(i)));
+
+		int i = 0;
+		while (places.size() != k && i < names.size()) {
+			Place p = searchPlace(names.get(i));
+			if (p != null) {
+				places.add(p);
+			}
+			i++;
 		}
 		return places;
 	}
